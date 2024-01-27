@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  app_test:
+    image:  ${IMAGE_APP}:${TAG_APP}
+    container_name: ${CONTAINER_NAME_APP}
+    ports:
+      - ${PORT}:80
+
+    networks:
+      - app_test
+    restart: ${RESTART_POLICY_APP}
+    volumes:
+      - ${CONFIG}:/build/config/
+      - ${LOG}:/build/log/
+      - ${TIMEZONE}:/etc/localtime:ro
+    environment:
+      - api_prefix=${API_PREFIX}
+      - db_driver=${DB_DRIVER}
+      - db_address=${DB_ADDRESS}
+      - db_port=${DB_PORT}
+      - db_name=${DB_NAME}
+      - db_username=${DB_USERNAME}
+      - db_password=${DB_PASSWORD}
+
+networks:
+  app_test: {}
