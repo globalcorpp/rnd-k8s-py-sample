@@ -1,27 +1,5 @@
 version: '3.9'
 services:
-  app:
-    image:  ${IMAGE_APP}:${TAG_APP}
-    container_name: ${CONTAINER_NAME_APP}
-    ports:
-      - ${APP_PORT}:80
-
-    networks:
-      - app_test
-    restart: ${RESTART_POLICY_APP}
-    volumes:
-      - ${CONFIG}:/build/config/
-      - ${LOG}:/build/log/
-      - ${TIMEZONE}:/etc/localtime:ro
-    environment:
-      - api_prefix=${API_PREFIX}
-      - db_driver=${DB_DRIVER}
-      - db_address=${DB_ADDRESS}
-      - db_port=${DB_PORT}
-      - db_name=${DB_NAME}
-      - db_username=${DB_USERNAME}
-      - db_password=${DB_PASSWORD}
-
   db:
     image: ${IMAGE_DB}:${TAG_DB}
     container_name: ${CONTAINER_NAME_DB}
@@ -38,6 +16,43 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app_test
+
+  app:
+    image:  ${IMAGE_APP}:${TAG_APP}
+    container_name: ${CONTAINER_NAME_APP}
+    networks:
+      - app_test
+    restart: ${RESTART_POLICY_APP}
+    volumes:
+      - ${CONFIG}:/build/config/
+      - ${LOG}:/build/log/
+      - ${TIMEZONE}:/etc/localtime:ro
+    environment:
+      - api_prefix=${API_PREFIX}
+      - db_driver=${DB_DRIVER}
+      - db_address=${DB_ADDRESS}
+      - db_port=${DB_PORT}
+      - db_name=${DB_NAME}
+      - db_username=${DB_USERNAME}
+      - db_password=${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  reverseproxy:
+    image: nginx
+    container_name: reverse-proxy
+    ports:
+      - 8085:80
+    restart: always
+    volumes:
+      - ${NGINX_CONFIG}:/etc/nginx/conf.d/
+      - ${NGINX_SSL}:/etc/nginx/ssl/
+      - ${NGINX_AUTH}:/etc/nginx/.htpasswd
+      - ${NGINX_LOG}:/var/log/nginx/
+      - ${TIMEZONE}:/etc/localtime:ro
     networks:
       - app_test
 

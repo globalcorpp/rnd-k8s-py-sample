@@ -1,0 +1,27 @@
+services:
+    reverseproxy:
+        image: nginx:alpine
+        container_name: rp
+        ports:
+            - 8084:8084
+            - 8085:8085
+        restart: always
+        volumes:
+          #- ./:/var/www
+          - ./nginx/:/etc/nginx/
+ 
+    nginx:
+        depends_on:
+            - reverseproxy
+        image: nginx:alpine
+        container_name: nginx
+        restart: always
+ 
+    apache:
+        depends_on:
+            - reverseproxy
+        image: httpd:alpine
+        container_name: apache
+        restart: always
+        volumes:
+          - ./apache-http/:/usr/local/apache2/htdocs/
