@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: app
+  name: app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      io.kompose.service: app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/rnd-k8s-py-sample-app-test: "true"
+        io.kompose.service: app
+    spec:
+      containers:
+        - env:
+            - name: api_prefix
+              value: api/v1
+            - name: db_address
+              value: db
+            - name: db_driver
+              value: postgresql
+            - name: db_name
+              value: test
+            - name: db_password
+              value: postgres
+            - name: db_port
+              value: "5432"
+            - name: db_username
+              value: postgres
+          image: pr.dotinlab.ir/cicd/k8s-py-sample:v1.0.0
+          name: app-test-app
+          ports:
+            - containerPort: 80
+              # hostPort: 8084
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /build/config
+              name: app-claim0
+            - mountPath: /build/log
+              name: app-claim1
+            #- mountPath: /etc/localtime
+            #  name: app-claim2
+            #  readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: app-claim0
+          persistentVolumeClaim:
+            claimName: app-claim0
+        - name: app-claim1
+          persistentVolumeClaim:
+            claimName: app-claim1
+        #- name: app-claim2
+         # persistentVolumeClaim:
+          #  claimName: app-claim2
+           # readOnly: true

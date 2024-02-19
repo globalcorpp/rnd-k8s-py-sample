@@ -1,0 +1,70 @@
+services:
+  app:
+    container_name: app_test_app
+    environment:
+      api_prefix: api/v1
+      db_address: db
+      db_driver: postgresql
+      db_name: test
+      db_password: postgres
+      db_port: "5432"
+      db_username: postgres
+    image: app_test:v1.0.0
+    networks:
+      app_test: null
+    ports:
+    - mode: ingress
+      target: 80
+      published: "8084"
+      protocol: tcp
+    restart: always
+    volumes:
+    - type: bind
+      source: /app/app_test/config/
+      target: /build/config
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /app/app_test/log/
+      target: /build/log
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  db:
+    container_name: app_test_db
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U postgres
+      timeout: 5s
+      interval: 5s
+      retries: 5
+    image: postgres:latest
+    networks:
+      app_test: null
+    restart: always
+    volumes:
+    - type: bind
+      source: /app/app_test/data/
+      target: /var/lib/postgresql/data
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+networks:
+  app_test:
+    name: rnd-k8s-py-sample_app_test
+
